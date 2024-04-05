@@ -1,3 +1,104 @@
+
+<template>
+    <input type="text" class="search-input" v-model="searchName" placeholder="Search country..."/>
+    <div>
+        Sort Name By :
+        <select v-model="sortType">
+            <option value="asc">ASC</option>
+            <option value="desc">DESC</option>
+        </select>
+    </div>
+    <div>
+        <button @click="prePage()">pre</button>
+        <span> {{ currentPage }}/{{ totalPages }} </span>
+        <button @click="nextPage()">Next</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Flag</th>
+                <th>Country Name</th>
+                <th>CCA2</th>
+                <th>CCA3</th>
+                <th>Native Name</th>
+                <th>Alternative Name</th>
+                <th>IDD</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(country , index) in paginatedData" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>
+                    <div class="display-img">
+                        <img :src="country.flags.png" />
+                    </div>
+                </td>
+                <td @click="showInfo(country)">{{ country.name.official }}</td>
+                <td>{{ country.cca2 }}</td>
+                <td>{{ country.cca3 }}</td>
+                <td>
+                    <ul>
+                        <li v-for="(outerValue, outerKey) in country.name.nativeName" :key="outerKey">
+                            <strong>{{ outerKey }}</strong>:
+                            <ul>
+                            <li v-for="(innerValue, innerKey) in outerValue" :key="innerKey">
+                                {{ innerKey }}: {{ innerValue }}
+                            </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li v-for="(item,id) in country.altSpellings" :key="id">{{ item }}</li>
+                    </ul>
+                </td>
+                <td>
+                    {{ country.idd.root }}
+                    <ul>
+                        <li v-for="(suffix,id) in country.idd.suffixes" :key="id">{{ suffix  }}</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div  id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" @click="closeModal()">&times;</span>
+            <ul v-for="(data,key) in object" :key="key">
+                <li v-if="!usedKey.includes(key)">
+                        <strong>{{ key }}</strong>:
+                        <div v-if="typeof data == 'object'">
+                            <ul v-for="(subdata, subkey) in data" :key="subkey">
+                                <li v-if="!usedKey.includes(`${key}.${subkey}`)">
+                                    <strong v-if="isNaN(subkey)">{{ subkey }} : </strong>
+                                    
+                                    <ul v-if="typeof subdata == 'object'" class="smalldata-container" >
+                                        <li class="smalldata" v-for="(smalldata, smallkey) in subdata" :key="smallkey">
+                                            <strong v-if="isNaN(smallkey)">{{ smallkey }} :</strong>
+                                             {{ smalldata }}
+                                        </li>
+                                    </ul>
+                                    <span v-else>
+                                        <img v-if="subkey == 'png' || subkey == 'svg'" :src="subdata" alt="" style="width: 100px;">
+                                        <a v-else-if="subkey == 'googleMaps' || subkey == 'openStreetMaps'" :href="subdata">{{ subdata }}</a>
+                                        <!-- <div v-else-if="subkey == 'googleMaps' || subkey == 'openStreetMaps'">
+                                            <iframe  width="600" height="450" frameborder="0" style="border:0"
+                                                :src="subdata" allowfullscreen=""   aria-hidden="false" tabindex="0">
+                                            </iframe>
+                                        </div> -->
+                                        <span v-else>{{ subdata }}</span>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <span v-else>{{ data }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
 <script setup>
 import axios from 'axios';
 import {ref, onMounted, computed, watch} from "vue"
@@ -7,6 +108,10 @@ const currentPage = ref(1)
 const searchName = ref('')
 var countries = ref([])
 const sortType = ref('')
+
+const object = ref({})
+
+const usedKey = ref(['name.official','name.nativeName','cca2','cca3','altSpellings','idd','flags.png'])
 
 onMounted(() => {
     fetchApi()
@@ -91,73 +196,58 @@ const nextPage = () => {
       }
 }
 
+const showInfo = (country) => {
+    object.value = country
+    console.log('display object')
+    console.log(object);
+    document.getElementById("myModal").style.display = "block"
+
+}
+
+const closeModal = () => {
+    document.getElementById("myModal").style.display = "none"
+}
+
+
 </script>
-<template>
-    <input type="text" class="search-input" v-model="searchName" placeholder="Search country..."/>
-    <div>
-        Sort Name By :
-        <select v-model="sortType">
-            <option value="asc">ASC</option>
-            <option value="desc">DESC</option>
-        </select>
-    </div>
-    <div>
-        <button @click="prePage()">pre</button>
-        <span> {{ currentPage }}/{{ totalPages }} </span>
-        <button @click="nextPage()">Next</button>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Flag</th>
-                <th>Country Name</th>
-                <th>CCA2</th>
-                <th>CCA3</th>
-                <th>Native Name</th>
-                <th>Alternative Name</th>
-                <th>IDD</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="(country , index) in paginatedData" :key="index">
-                <td>{{ index + 1 }}</td>
-                <td>
-                    <div class="display-img">
-                        <img :src="country.flags.png" />
-                    </div>
-                </td>
-                <td>{{ country.name.official }}</td>
-                <td>{{ country.cca2 }}</td>
-                <td>{{ country.cca3 }}</td>
-                <td>
-                    <ul>
-                        <li v-for="(outerValue, outerKey) in country.name.nativeName" :key="outerKey">
-                            <strong>{{ outerKey }}</strong>:
-                            <ul>
-                            <li v-for="(innerValue, innerKey) in outerValue" :key="innerKey">
-                                {{ innerKey }}: {{ innerValue }}
-                            </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </td>
-                <td>
-                    <ul>
-                        <li v-for="(item,id) in country.altSpellings" :key="id">{{ item }}</li>
-                    </ul>
-                </td>
-                <td>
-                    {{ country.idd.root }}
-                    <ul>
-                        <li v-for="(suffix,id) in country.idd.suffixes" :key="id">{{ suffix  }}</li>
-                    </ul>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</template>
 <style scoped>
+.modal {
+  display: none;
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  text-align: left;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
 
 table{
     border: 1px solid gray;
@@ -182,6 +272,10 @@ td{
     padding: 0.5rem;
     font-size: 18px;
 }
-
+.smalldata-container{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
 
 </style>
