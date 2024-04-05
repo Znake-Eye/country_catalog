@@ -1,18 +1,17 @@
 
 <template>
-    <input type="text" class="search-input" v-model="searchName" placeholder="Search country..."/>
-    <div>
-        Sort Name By :
-        <select v-model="sortType">
-            <option value="asc">ASC</option>
-            <option value="desc">DESC</option>
-        </select>
+    <div class="header-search">
+        <input type="text" class="search-input" v-model="searchName" placeholder="Search country..."/>
+        <div>
+            Sort Name By :
+            <select v-model="sortType">
+                <option value="asc">ASC</option>
+                <option value="desc">DESC</option>
+            </select>
+        </div>
+        <div>Total page : {{ totalPages }}</div>
     </div>
-    <div>
-        <button @click="prePage()">pre</button>
-        <span> {{ currentPage }}/{{ totalPages }} </span>
-        <button @click="nextPage()">Next</button>
-    </div>
+
     <table>
         <thead>
             <tr>
@@ -63,6 +62,15 @@
             </tr>
         </tbody>
     </table>
+
+    <!-- pagination -->
+    <div class="pagination-container">
+        <button @click="prePage()">pre</button>
+        <div> {{ currentPage }}/{{ totalPages }} </div>
+        <button @click="nextPage()">Next</button>
+    </div>
+
+    <!-- modal section -->
     <div  id="myModal" class="modal">
         <div class="modal-content">
             <span class="close" @click="closeModal()">&times;</span>
@@ -82,12 +90,7 @@
                                     </ul>
                                     <span v-else>
                                         <img v-if="subkey == 'png' || subkey == 'svg'" :src="subdata" alt="" style="width: 100px;">
-                                        <a v-else-if="subkey == 'googleMaps' || subkey == 'openStreetMaps'" :href="subdata">{{ subdata }}</a>
-                                        <!-- <div v-else-if="subkey == 'googleMaps' || subkey == 'openStreetMaps'">
-                                            <iframe  width="600" height="450" frameborder="0" style="border:0"
-                                                :src="subdata" allowfullscreen=""   aria-hidden="false" tabindex="0">
-                                            </iframe>
-                                        </div> -->
+                                        <a v-else-if="subkey == 'googleMaps' || subkey == 'openStreetMaps'" :href="subdata" target="_blank">{{ subdata }}</a>
                                         <span v-else>{{ subdata }}</span>
                                     </span>
                                 </li>
@@ -213,28 +216,26 @@ const closeModal = () => {
 <style scoped>
 .modal {
   display: none;
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  position: fixed;
+  z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
 }
 
-/* Modal Content */
 .modal-content {
   background-color: #fefefe;
   margin: auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%;
+  width: 70%;
   text-align: left;
 }
 
-/* The Close Button */
 .close {
   color: #aaaaaa;
   float: right;
@@ -276,6 +277,22 @@ td{
     display: flex;
     flex-wrap: wrap;
     gap: 2rem;
+}
+.header-search{
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+strong:first-letter{
+    text-transform: uppercase;
+}
+.pagination-container{
+    display: flex;
+    gap: 1rem;
+    justify-content: end;
+    font-size: 20px;
+    padding: 2rem;
 }
 
 </style>
